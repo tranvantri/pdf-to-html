@@ -27,7 +27,7 @@
   },
   "autoload": {
     "psr-4": {
-      "TvT\\PdfToHtml\\": "src/"
+      "TvT\\PdfToHtml\\": "src"
     }
   }
 }
