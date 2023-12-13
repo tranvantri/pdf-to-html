@@ -1,0 +1,28 @@
+{
+  "name": "tranvantri/pdf-to-html",
+  "description": "This PHP class can convert your pdf files to html using poppler-utils.",
+  "keywords": [
+    "tranvantri",
+    "pdf-to-html"
+  ],
+  "license": "MIT",
+  "authors": [
+  ],
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require": {
+    "php": ">=8.0",
+    "pelago/emogrifier": "^5.0",
+    "ext-dom": "*",
+    "ext-fileinfo": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-0": {
+      "TvT": "src"
+    },
+    "psr-4": {
+      "TvT\\PdfToHtml\\": "src/"
+    }
+  }
+}
