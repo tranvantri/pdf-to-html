@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: tonchik™
- * Date: 15.09.2015
- * Time: 19:18
- */
 
 namespace TVT\PdfToHtml;
 
 use DOMDocument;
 use DOMXPath;
 use Pelago\Emogrifier\CssInliner;
+use Symfony\Component\CssSelector\Exception\ParseException;
 
 /**
  * This class creates a collection of html pages with some improvements.
@@ -20,8 +15,8 @@ use Pelago\Emogrifier\CssInliner;
  */
 class Html extends Base
 {
-    private $pages = 0;
-    private $content = [];
+    private int $pages = 0;
+    private array $content = [];
 
     private $defaultOptions = [
         'inlineCss' => true,
@@ -37,11 +32,12 @@ class Html extends Base
 
     /**
      * Add page to collection with the conversion, according to options.
-     * @param integer $number
-     * @param string $content
+     * @param  integer  $number
+     * @param  string  $content
      * @return $this
+     * @throws ParseException
      */
-    public function addPage($number, $content)
+    public function addPage(int $number, string $content): static
     {
         if ($this->getOptions('inlineCss')) {
             $content = $this->setInlineCss($content);
@@ -57,6 +53,7 @@ class Html extends Base
 
         $this->content[$number] = $content;
         $this->pages = count($this->content);
+
         return $this;
     }
 
@@ -64,15 +61,15 @@ class Html extends Base
      * @param $number
      * @return string|null
      */
-    public function getPage($number)
+    public function getPage($number): ?string
     {
-        return isset($this->content[$number]) ? $this->content[$number] : null;
+        return $this->content[$number] ?? null;
     }
 
     /**
      * @return array
      */
-    public function getAllPages()
+    public function getAllPages(): array
     {
         return $this->content;
     }
@@ -83,18 +80,19 @@ class Html extends Base
      * @return string
      * @throws \Symfony\Component\CssSelector\Exception\ParseException
      */
-    private function setInlineCss($content)
+    private function setInlineCss($content): string
     {
         $content = str_replace(['<!--', '-->'], '', $content);
+
         return CssInliner::fromHtml($content)->inlineCss()->render();
     }
 
     /**
      * The method looks for images in html and replaces the src attribute to base64 hash.
-     * @param string $content
+     * @param  string  $content
      * @return string
      */
-    private function setInlineImages($content)
+    private function setInlineImages(string $content)
     {
         $dom = new DOMDocument();
         $dom->loadHTML($content);
@@ -106,21 +104,24 @@ class Html extends Base
             /** @var \DOMNode $img */
             $attrImage = $img->getAttribute('src');
             $pi = pathinfo($attrImage);
-            $image = $this->getOutputDir() . '/' . $pi['basename'];
+
+            $image = $this->getOutputDir().'/'.$pi['basename'];
             $imageData = base64_encode(file_get_contents($image));
-            $src = 'data: ' . mime_content_type($image) . ';base64,' . $imageData;
+            $src = 'data: '.mime_content_type($image).';base64,'.$imageData;
             $content = str_replace($attrImage, $src, $content);
         }
+
         unset($dom, $xpath, $images, $imageData);
+
         return $content;
     }
 
     /**
      * The method takes from html body content only.
-     * @param string $content
+     * @param  string  $content
      * @return string
      */
-    private function setOnlyContent($content)
+    private function setOnlyContent(string $content): string
     {
         $dom = new DOMDocument();
         $dom->loadHTML($content);
@@ -132,7 +133,9 @@ class Html extends Base
         foreach ($body->childNodes as $node) {
             $html .= $dom->saveHTML($node);
         }
+
         unset($dom, $xpath, $body, $content);
+
         return trim($html);
     }
 }

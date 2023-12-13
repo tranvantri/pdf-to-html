@@ -1,12 +1,8 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: tonchik™
- * Date: 15.09.2015
- * Time: 12:52
- */
 
 namespace TVT\PdfToHtml;
+
+use Symfony\Component\CssSelector\Exception\ParseException;
 
 /**
  * This class creates a collection of html pages with some improvements.
@@ -17,10 +13,10 @@ namespace TVT\PdfToHtml;
  */
 class Pdf extends Base
 {
-    private $file = null;
-    private $info = null;
-    private $html = null;
-    private $result = null;
+    private ?string $file = null;
+    private ?array $info = null;
+    private ?Html $html = null;
+    private ?string $result = null;
 
     private $defaultOptions = [
         'pdftohtml_path' => '/usr/bin/pdftohtml',
@@ -43,7 +39,7 @@ class Pdf extends Base
         ]
     ];
 
-    public function __construct($file, $options=[])
+    public function __construct(string $file, array $options = [])
     {
         $this->setOptions(array_replace_recursive($this->defaultOptions, $options));
         $this->setFile($file)->setInfoObject()->setHtmlObject();
@@ -51,12 +47,13 @@ class Pdf extends Base
 
     /**
      * Set file.
-     * @param string $file
+     * @param  string  $file
      * @return $this
      */
-    public function setFile($file)
+    public function setFile(string $file): static
     {
         $this->file = $file;
+
         return $this;
     }
 
@@ -64,10 +61,12 @@ class Pdf extends Base
      * Get info of pdf file.
      * @return array|null
      */
-    public function getInfo()
+    public function getInfo(): ?array
     {
-        if($this->info == null)
+        if($this->info == null) {
             $this->setInfoObject();
+        }
+
         return $this->info;
     }
 
@@ -75,20 +74,24 @@ class Pdf extends Base
      * Get count page in pdf file.
      * @return mixed
      */
-    public function countPages()
+    public function countPages(): mixed
     {
-        if($this->info == null)
+        if($this->info == null) {
             $this->setInfoObject();
+        }
+
         return $this->info['pages'];
     }
 
     /**
      * Get Html object.
      * @return Html
+     * @throws ParseException
      */
-    public function getHtml()
+    public function getHtml(): ?Html
     {
         $this->getContent();
+
         return $this->html;
     }
 
@@ -97,11 +100,10 @@ class Pdf extends Base
      * @param string $dir
      * @return $this
      */
-    public function setOutputDir($dir)
+    public function setOutputDir(string $dir): static
     {
-        if ($this->html) {
-            $this->html->setOutputDir($dir);
-        }
+        $this->html?->setOutputDir($dir);
+
         return parent::setOutputDir($dir);
     }
 
@@ -109,7 +111,7 @@ class Pdf extends Base
      * Get pdf file info using pdfinfo software.
      * @return $this
      */
-    private function setInfoObject()
+    private function setInfoObject(): static
     {
         $content = shell_exec($this->getOptions('pdfinfo_path') . ' ' . escapeshellarg($this->file));
         $options = explode("\n", $content);
@@ -120,7 +122,9 @@ class Pdf extends Base
                 $info[str_replace([' '], ['_'], strtolower($key))] = trim($value);
             }
         }
+
         $this->info = $info;
+
         return $this;
     }
 
@@ -128,24 +132,28 @@ class Pdf extends Base
      * Create and set Html object.
      * @return $this
      */
-    private function setHtmlObject()
+    private function setHtmlObject(): static
     {
         $this->html = new Html($this->getOptions('html'));
+
         return $this;
     }
 
     /**
      * Method does most of work, parses pdf, html files obtained prepares and sends to Html object.
+     * @throws ParseException
      */
-    private function getContent()
+    private function getContent(): void
     {
         $outputDir = $this->getOptions('outputDir') ? $this->getOptions('outputDir') : dirname(__FILE__) . '/../output/' . uniqid();
-        if (!file_exists($outputDir)) mkdir($outputDir, 0777, true);
+        if (!file_exists($outputDir)) {
+            mkdir($outputDir, 0777, true);
+        }
 
         $this->setOutputDir($outputDir)->generate();
 
-        $fileinfo = pathinfo($this->file);
-        $base_path = $this->getOutputDir() . '/' . $fileinfo['filename'];
+        $fileInfo = pathinfo($this->file);
+        $base_path = $this->getOutputDir() . '/' . $fileInfo['filename'];
 
         $countPages = $this->countPages();
         if ($countPages) {
@@ -168,11 +176,12 @@ class Pdf extends Base
      * Generating html files using pdftohtml software.
      * @return $this
      */
-    private function generate()
+    private function generate(): static
     {
         $this->result = null;
         $command = $this->getCommand();
         $this->result = exec($command);
+
         return $this;
     }
 
@@ -180,20 +189,23 @@ class Pdf extends Base
      * Get command for generate html
      * @return string
      */
-    public function getCommand() {
-        if ($this->countPages() > 1)
-            $this->setOptions(['generate'=>['noFrames' => false]]);
+    public function getCommand(): string
+    {
+        if ($this->countPages() > 1) {
+            $this->setOptions(['generate' => ['noFrames' => false]]);
+        }
+
         $output = $this->getOutputDir() . '/' . preg_replace("/\.pdf$/", '', basename($this->file)) . '.html';
         $options = $this->generateOptions();
-        $command = $this->getOptions('pdftohtml_path') . ' ' . $options . ' ' . escapeshellarg($this->file) . ' ' . escapeshellarg($output);
-        return $command;
+
+        return $this->getOptions('pdftohtml_path') . ' ' . $options . ' ' . escapeshellarg($this->file) . ' ' . escapeshellarg($output);
     }
 
     /**
      * Get result of generate html
      * @return string|null
      */
-    public function getResult()
+    public function getResult(): ?string
     {
         return $this->result;
     }
@@ -202,9 +214,9 @@ class Pdf extends Base
      * Generate options based on the preserved options
      * @return string
      */
-    private function generateOptions()
+    private function generateOptions(): string
     {
-        $generated = array();
+        $generated = [];
         $generateValue = $this->getOptions('generate');
         array_walk($generateValue, function ($value, $key) use (&$generated) {
             $result = '';
@@ -225,8 +237,10 @@ class Pdf extends Base
                     $result = $value ? '-noframes' : '';
                     break;
             }
+
             $generated[] = $result;
         });
+
         return implode(' ', $generated);
     }
 

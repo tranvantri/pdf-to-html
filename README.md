@@ -12,18 +12,8 @@ Please see how to use below.
 
 ## Installation
 
-When you are in your active directory apps, you can just run this command to add this package on your app
-
 ```
-  composer require tonchik-tm/pdf-to-html:~1
-```
-
-Or add this package to your `composer.json`
-
-```json
-{
-  "tonchik-tm/pdf-to-html":"~1"
-}
+  composer require tranvantri/pdf-to-html
 ```
 
 ## Requirements
@@ -81,13 +71,13 @@ Go in extracted directory. There will be a directory called `bin`. We will need 
 include 'vendor/autoload.php';
 
 // initiate
-$pdf = new \TonchikTm\PdfToHtml\Pdf('test.pdf', [
+$pdf = new \TvT\PdfToHtml\Pdf('test.pdf', [
     'pdftohtml_path' => '/usr/bin/pdftohtml',
     'pdfinfo_path' => '/usr/bin/pdfinfo'
 ]);
 
 // example for windows
-// $pdf = new \TonchikTm\PdfToHtml\Pdf('test.pdf', [
+// $pdf = new \TvT\PdfToHtml\Pdf('test.pdf', [
 //     'pdftohtml_path' => '/path/to/poppler/bin/pdftohtml.exe',
 //     'pdfinfo_path' => '/path/to/poppler/bin/pdfinfo.exe'
 // ]);
@@ -112,7 +102,7 @@ foreach ($pdf->getHtml()->getAllPages() as $page) {
 ```php
 <?php
 
-$full_settings = [
+$fullSettings = [
     'pdftohtml_path' => '/usr/bin/pdftohtml', // path to pdftohtml
     'pdfinfo_path' => '/usr/bin/pdfinfo', // path to pdfinfo
 
@@ -135,7 +125,3 @@ $full_settings = [
     ]
 ]
 ```
-
-## Feedback & Contribute
-
-Send me an issue for improvement or any buggy thing. I love to help and solve another people problems. Thanks :+1:
