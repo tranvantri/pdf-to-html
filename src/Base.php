@@ -1,6 +1,6 @@
 <?php
 
-namespace TVT\PdfToHtml;
+namespace TvT\PdfToHtml;
 
 /**
  * This is base class with common properties and methods.

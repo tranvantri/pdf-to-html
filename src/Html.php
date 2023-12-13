@@ -1,6 +1,6 @@
 <?php
 
-namespace TVT\PdfToHtml;
+namespace TvT\PdfToHtml;
 
 use DOMDocument;
 use DOMXPath;
